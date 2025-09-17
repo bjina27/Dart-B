@@ -67,17 +67,26 @@
 
 ## 2.4 Product-Market Fit 확인 지표
 ### 2.4.1 리텐션
+<img width="200" height="100" alt="image" src="https://github.com/user-attachments/assets/9df7d7b7-90de-4e43-8cbc-9ff926d29946" />
+
+<img width="200" height="100" alt="image" src="https://github.com/user-attachments/assets/e1d77701-2f19-4435-b38b-039ec179891b" />
+
 - 특정 서비스에 얼마나 꾸준히 남아서 활동하는지를 보여줌
 - 그래프의 기울기가 완만해지면서 리텐션이 안정적으로 유지되는지, 혹은 꾸준히 우하향하는지
 - 상위 랭킹 앱일수록 리텐션이 완만해지는 지점이 높음
 - 온보딩 과정이 매우 중요
 - 카테고리를 감안해서 지표의 건전성을 판단하는 것이 중요
 ### 2.4.2 전환율
+<img width="200" height="100" alt="image" src="https://github.com/user-attachments/assets/70b236f0-c531-49ab-9596-55feb0b7a810" />
+<img width="200" height="100" alt="image" src="https://github.com/user-attachments/assets/b89b55c4-d819-49ff-8909-d41f987a4f72" />
+
 - 한 단계에서 다음 단계로 넘어가는 사용자의 비율을 의미
 - 가입/주요이벤트의 전환율을 보면 Product-Market Fit을 얼마나 만족하는지 판단 가능
 - 단계가 거듭될수록 이탈 사용자가 많아짐 → 전환 퍼널은 역삼각형 모양
 - 카테고리, 유입트래픽 등의 변수에 따라 전환율의 차이가 있으므로 전환율 수치보다 시간의 흐름에 따른 전환율의 변화 추이를 보는 것이 더 유용
 ### 2.4.3 순수 추천 지수(NPS)
+<img width="200" height="100" alt="image" src="https://github.com/user-attachments/assets/677fbde0-ae8b-40ae-a5bc-4757efd4262a" />
+
 - 이 서비스를 지인이나 친구에게 얼마나 추천하고 싶은가?
 - 0점-10점, 11점 리커트 척도
 - 3개의 그룹으로 나뉨: 적극적 추천 그룹(9-10), 소극적 추천 그룹(7-8), 비추천그룹(0-6)
