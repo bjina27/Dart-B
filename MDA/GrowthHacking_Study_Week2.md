@@ -1,4 +1,4 @@
-어트# 3. AARRR
+# 3. AARRR
 
 ## 3.1 AARRR 개요
 
