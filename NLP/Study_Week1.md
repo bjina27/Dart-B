@@ -887,8 +887,468 @@ word_score_table["반포한강"].cohesion_forward
 
 
 
+# 7
+
+# 8. 순환 신경망(Recurrent Neural Network)
+
+## 8-1 순환 신경망(Recurrent Neural Network, RNN)
+### RNN
+입력과 출력을 시퀀스(Sequence) 단위로 처리하는 시퀀스 모델<br>
+시퀀스: 번역기의 입력은 번역하고자 하는 단어의 시퀀스인 문장임, 출력에 해당되는 번역된 문장 또한 단어의 시퀀스임<br>
+RNN은 가장 기본적인 인공 신경망 시퀀스 모델
+- 피드 포워드 신경망(Feed Forward Neural Network): 은닉층에서 활성화 함수를 지닌 값은 오직 출력층 방향으로만 향하는 신경망, RNN은 그렇지 않은 신경망 중 하나
+- RNN: 은닉층의 노드에서 활성화 함수를 통해 나온 결과값을 출력층 방향으로도 보내면서, 다시 은닉층 노드의 다음 계산의 입력으로 보냄
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/a50564cc-e034-4e7b-9d25-90459a593beb" />
+
+- x: 입력층의 입력 벡터 / y: 출력층의 출력 벡터
+- 실제로는 편향 b도 입력으로 존재할 수 있음
+#### cell
+- RNN에서 은닉층에서 활성화 함수를 통해 결과를 내보내는 역할을 하는 노드
+- 이전의 값을 기억하려고 하는 일종의 메모리 역할을 수행
+- **메모리 셀** 또는 **RNN 셀**이라고 표현
+- 각각의 시점(time step)에서 바로 이전 시점에서의 은닉층의 메모리 셀에서 나온 값을 자신의 입력으로 사용하는 재귀적 활동을 함
+- 이는 현재 시점 t에서의 메모리 셀이 갖고있는 값은 과거의 메모리 셀들의 값에 영향을 받은 것임
+#### 은닉 상태(hidden state)
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/f7c96054-362f-4e2e-8db8-3cde52d8d8b8" />
+
+- 메모리 셀이 출력층 방향 또는 다음 시점인 t+1의 자신에게 보내는 값
+- t 시점의 메모리 셀은 t-1 시점의 메모리 셀이 보낸 은닉 상태값을 t 시점의 은닉 상태 계산을 위한 입력값으로 사용
+- 피드 포워드 신경망에서는 뉴런이라는 단위를 사용했지만, RNN에서는 뉴런 대신 입력층과 출력층에서는 각각 입력 벡터와 출력 벡터, 은닉층에서는 은닉 상태라는 표현 사용
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/8f205b69-57d6-4592-91f9-41f23b6c4189" />
+
+- 입력 벡터의 차원이 4, 은닉 상태의 크기가 2, 출력층의 출력 벡터의 차원이 2인 RNN이 시점이 2일때의 모습
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/97164c40-8f89-4f57-9998-9b053cd18281" />
+
+- RNN은 입력과 출력의 길이를 다르게 설계할 수 있음
+- RNN 셀의 각 시점의 입, 출력 단위는 사용자가 정의하기 나름이지만, 가장 보편적인 단위는 '단어 벡터'
+- 일대다 구조의 모델
+  - 하나의 이미지 입력에 대해서 사진의 제목을 출력하는 이미지 캡셔닝 작업에 사용 가능
+- 다대일 구조의 모델
+  - 입력 문서가 긍정적인지 부정적인지를 판별하는 감성 분류, 메일이 정상 메일인지 스팸 메일인지 판별하는 스팸 메일 분류 등에 사용
+- 다대다 구조의 모델
+  - 사용자가 문장을 입력하면 대답 문장을 출력하는 챗봇과 입력 문장으로부터 번역된 문장을 출력하는 번역기, 태깅 작업 챕터의 개체명 인식이나 품사 태깅과 같은 작업이 속함
+<img width="200" height="400" alt="image" src="https://github.com/user-attachments/assets/b8a27328-89ea-4c2a-a226-bce7c6a1e4fb" />
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/f68291a7-f76c-4e16-a4bb-875386b2af2d" />
+
+  - ht: 현재 시점 t에서의 은닉 상태값
+  - 은닉층의 메모리 셀은 ht를 계산하기 위해서 총 두개의 가중치를 가짐
+    - Wx: 입력층을 위한 가중치
+    - Wh: 이전 시점 t-1의 은닉 상태값인 ht-1을 위한 가중치
+- RNN의 은닉층 연산(벡터와 행렬)
+  <img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/bf7a7771-bd84-48f9-a430-8a3afdf86da8" />
+  <img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/ed0bbad5-207d-4a53-96af-9adbb307a368" />
+
+  - 상단 이미지: 각 벡터와 행렬의 크기
+  - 하단 이미지: 배치 크기가 1이고, d와 Dh 두 값 모두를 4라고 가정하였을 때, RNN의 은닉층 연산
+  - Wx, Wh, Wy의 값은 하나의 층에서는 모든 시점에서 값을 동일하게 공유
+  - 은닉층이 2개 이상일 경우, 각 은닉층에서의 가중치는 서로 다름
+  - 출력층
+    - 이진 분류를 해야하는 경우라면 출력층에 로지스틱 회귀를 사용하여 시그모이드 함수 사용
+    - 다중 클래스 분류를 해야하는 경우라면 출력층에 소프트맥스 회귀를 사용하여 소프트맥스 함수 사용
+
+### 케라스(Keras)로 RNN 구현하기
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/5cd97374-1126-4672-9967-b1cc49c5e4cd" />
+
+```python
+# 추가 인자를 사용할 때
+model.add(SimpleRNN(hidden_units, input_shape=(timesteps, input_dim)))
+
+# 다른 표기
+model.add(SimpleRNN(hidden_units, input_length=M, input_dim=N))
+```
+~~~
+hidden_units = 은닉 상태의 크기를 정의. 메모리 셀이 다음 시점의 메모리 셀과 출력층으로 보내는 값의 크기(output_dim)와도 동일. RNN의 용량(capacity)을 늘린다고 보면 되며, 중소형 모델의 경우 보통 128, 256, 512, 1024 등의 값을 가짐
+timesteps = 입력 시퀀스의 길이(input_length)라고 표현하기도 함, 시점의 수
+input_dim = 입력의 크기
+~~~
+- RNN 층은 (batch_size, timesteps, input_dim) 크기의 3D 텐서를 입력으로 받음
+  - batch_size: 한 번에 학습하는 데이터의 개수
+- 주의할 점
+  - 위 코드는 출력층까지 포함한 인공신경망 코드가 아니라 주로 은닉층으로 간주할 수 있는 하나의 RNN 층에 대한 코드임
+  - 해당 코드가 리턴하는 결과값은 하나의 은닉 상태 또는 정의하기에 따라 여러 개의 시점의 은닉 상태임
+- RNN 층이 입력 3D 텐서를 입력받아서 은닉 상태를 출력하는 방식
+  - 메모리 셀의 최종 시점의 은닉 상태만을 리턴하고자 한다면 (batch_size, output_dim) 크기의 2D 텐서를 리턴
+  - 메모리 셀의 각 시점(time step)의 은닉 상태값들을 모아서 전체 시퀀스를 리턴하고자 한다면 (batch_size, timesteps, output_dim) 크기의 3D 텐서를 리턴
+- 마지막 은닉 상태만 전달하도록 하면 다대일 문제를 풀 수 있으며, 모든 시점의 은닉 상태를 전달하도록 하면 다음층에 RNN 은닉층이 하나 더 있는 경우이거나 다대다 문제를 풀 수 있음
+
+### 파이썬으로 RNN 구현하기
+Numpy로 RNN층 구현
+<img width="400" height="100" alt="image" src="https://github.com/user-attachments/assets/2d2b368c-eb20-438f-bc1b-1dd47556fd3d" />
+
+```python
+# 아래의 코드는 가상의 코드(pseudocode)로 실제 동작하는 코드가 아님. 
+
+hidden_state_t = 0 # 초기 은닉 상태를 0(벡터)로 초기화
+for input_t in input_length: # 각 시점마다 입력을 받는다.
+    output_t = tanh(input_t, hidden_state_t) # 각 시점에 대해서 입력과 은닉 상태를 가지고 연산
+    hidden_state_t = output_t # 계산 결과는 현재 시점의 은닉 상태가 된다.
+
+# 초기 은닉 상태를 출력
+import numpy as np
+
+timesteps = 10
+input_dim = 4
+hidden_units = 8
+
+# 입력에 해당되는 2D 텐서
+inputs = np.random.random((timesteps, input_dim))
+
+# 초기 은닉 상태는 0(벡터)로 초기화
+hidden_state_t = np.zeros((hidden_units,)) 
+
+print('초기 은닉 상태 :',hidden_state_t)
+
+# 가중치와 편향을 각 크기에 맞게 정의하고 크기를 출력
+Wx = np.random.random((hidden_units, input_dim))  # (8, 4)크기의 2D 텐서 생성. 입력에 대한 가중치.
+Wh = np.random.random((hidden_units, hidden_units)) # (8, 8)크기의 2D 텐서 생성. 은닉 상태에 대한 가중치.
+b = np.random.random((hidden_units,)) # (8,)크기의 1D 텐서 생성. 이 값은 편향(bias).
+
+print('가중치 Wx의 크기(shape) :',np.shape(Wx))
+print('가중치 Wh의 크기(shape) :',np.shape(Wh))
+print('편향의 크기(shape) :',np.shape(b))
+
+# 모든 시점의 은닉 상태를 출력한다고 가정하고 RNN층 동작
+total_hidden_states = []
+
+# 각 시점 별 입력값.
+for input_t in inputs:
+
+  # Wx * Xt + Wh * Ht-1 + b(bias)
+  output_t = np.tanh(np.dot(Wx,input_t) + np.dot(Wh,hidden_state_t) + b)
+
+  # 각 시점 t별 메모리 셀의 출력의 크기는 (timestep t, output_dim)
+  # 각 시점의 은닉 상태의 값을 계속해서 누적
+  total_hidden_states.append(list(output_t))
+  hidden_state_t = output_t
+
+# 출력 시 값을 깔끔하게 해주는 용도.
+total_hidden_states = np.stack(total_hidden_states, axis = 0) 
+
+# (timesteps, output_dim)
+print('모든 시점의 은닉 상태 :')
+print(total_hidden_states)
+```
+
+### 깊은 순환 신경망(Deep Recurrent Neural Network)
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/325097ba-c717-40d0-ae85-cec1297ac626" />
+
+순환 신경망에서 은닉층이 1개 더 추가되어 은닉층이 2개인 깊은 순환 신경망의 이미지
+```python
+# 은닉층을 2개 추가하는 코드
+# 첫번째 은닉층은 다음 은닉층이 존재하므로 return_sequences = True를 설정하여 모든 시점에 대해서 은닉 상태 값을 다음 은닉층으로 보내줌
+model = Sequential()
+model.add(SimpleRNN(hidden_units, input_length=10, input_dim=5, return_sequences=True))
+model.add(SimpleRNN(hidden_units, return_sequences=True))
+```
+
+### 방향 순환 신경망(Bidirectional Recurrent Neural Network)
+시점 t에서의 출력값을 예측할 때 이전 시점의 입력뿐만 아니라, 이후 시점의 입력 또한 예측에 기여할 수 있다는 아이디어에 기반
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/59351bda-8e24-4a8c-96de-d67b60b7f6c7" />
+
+- 하나의 출력값을 예측하기 위해 기본적으로 두 개의 메모리 셀을 사용
+- 첫번째 메몰 셀: 앞 시점의 은닉 상태를 전달받아 현재의 은닉 상태를 계산
+- 두번째 메모리 셀: 뒤 시점의 은닉 상태를 전달 받아 현재의 은닉 상태를 계산(입력 시퀀스를 반대 방향으로 읽는 것)
+- 양방향 RNN도 다수의 은닉층을 가질 수 있음
+```pythonLS
+# 은닉층이 4개인 경우
+model = Sequential()
+model.add(Bidirectional(SimpleRNN(hidden_units, return_sequences=True), input_shape=(timesteps, input_dim)))
+model.add(Bidirectional(SimpleRNN(hidden_units, return_sequences=True)))
+model.add(Bidirectional(SimpleRNN(hidden_units, return_sequences=True)))
+model.add(Bidirectional(SimpleRNN(hidden_units, return_sequences=True)))
+```
+ 
+
+## 8-2 장단기 메모리(Long Short-Term Memory, LSTM)
+RNN: 앞서 배운 가장 단순한 형태의 RNN, 바닐라 RNN<br>
+LSTM: 바닐라 RNN의 한계를 극복하기 위한 RNN의 변형
+
+### 바닐라 RNN의 한계
+- 출력 결과가 이전의 계산 결과에 의존
+- 비교적 짧은 시퀀스에 대해서만 효과를 보임
+- 바닐라 RNN의 시점(time step)이 길어질 수록 앞의 정보가 뒤로 충분히 전달되지 못함
+- RNN이 충분한 기억력을 가지고 있지 못하다면 다음 단어를 엉뚱하게 예측하는데, 이를 장기 의존성 문제(the problem of Long-Term Dependencies)라 함
+
+### 바닐라 RNN 내부 열어보기
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/88bb7d02-0c32-4bcd-b6b5-c2399fc26845" />
+
+- 바닐라 RNN은 xt와 ht-1이라는 두개의 입력이 각각의 가중치와 곱해져서 메모리 셀의 입력이 됨
+- 이를 하이퍼볼릭탄젠트 함수의 입력으로 사용하고 이 값은 은닉층의 출력인 은닉 상태가 됨
+
+### LSTM(Long Short-Term Memory)
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/00052e36-9302-45c4-b941-19b1ee3f25ff" />
+
+- 전통적인 RNN의 단점을 보완한 RNN의 일종
+- 은닉층에 메모리 셀에 입력 게이트, 망각 게이트, 출력 게이트를 추가하여 불필요한 기억을 지우고, 기억해야 할 것들을 정함
+- 은닉 상태를 계산하는 식이 RNN보다 조금 더 복잡함
+- 셀 상태(cell state)라는 값을 추가함
+- Ct: t 시점의 셀 상태
+- RNN에 비해 긴 시퀀스의 입력을 처리하는데 탁월함
+- 이전시점의 셀 상태가 다음 시점의 셀 상태를 구하기 위한 입력으로 사용됨
+- 은닉 상태의 값과 셀 상태의 값을 구하기 위해 새로 추가 된 3개의 게이트를 사용
+  - 공통적으로 시그모이드 함수가 존재
+  - 삭제 게이트
+  - 입력 게이트
+  - 출력 게이트
+
+#### 입력 게이트
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/53b58d43-5d92-49de-bc49-3f789413c58e" />
+
+현재 정보를 기억하기 위한 게이트
+
+#### 삭제 게이트
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/7ee060be-eb1c-4f28-9546-7aa77002b842" />
+
+기억을 삭제하기 위한 게이트
+
+#### 셀 상태
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/739483ed-3aa0-466c-96d3-abcbc4adb0f3" />
+
+입력 게이트에서 선택된 기억을 삭제 게이트의 결과값과 더함. 이 값을 현재 시점 t의 셀 상태라고 하며, 이 값은 다음 t+1 시점의 LSTM 셀로 넘겨짐<br>
+결과적으로 삭제 게이트는 이전 시점의 입력을 얼마나 반영할지를 의미하고, 입력 게이트는 현재 시점의 입력을 얼마나 반영할지를 결정
+
+#### 출력 게이트와 은닉 상태
+<img width="400" height="300" alt="image" src="https://github.com/user-attachments/assets/d8eda569-cce5-4ae9-9105-ac17e9ec460f" />
+
+출력 게이트는 현재 시점 t의 x값과 이전 시점 t-1의 은닉 상태가 시그모이드 함수를 지난 값<br>
+해당 닶은 현재 시점 t의 은닉 상태를 결정하는 일에 쓰임<br>
+셀 상태의 값은 하이볼릭탄젠트 함수를 지나 -1과 1사이의 값이 되고, 해당 값은 출력 게이트의 값과 연산되면서, 값이 걸러지는 효과가 발생하여 은닉 상태가 됨<br> 
+은닉 상태의 값은 또한 출력층으로도 향함
 
 
+## 8-3 게이트 순환 유닛(Gated Recurrent Unit, GRU)
+GRU는 LSTM의 장기 의존성 문제에 대한 해결책을 유지하면서, 은닉 상태를 업데이트 하는 계산을 줄임<br>
+즉, 성능은 LSTM과 유사하면서 복잡했던 LSTM의 구조를 간단화 함
+### GRU(Gated Recurrent Unit)
+<img width="300" height="400" alt="image" src="https://github.com/user-attachments/assets/a0820d08-b760-406b-9a3e-1d256a5e0ea5" />
+
+- LSTM에는 출력, 입력, 삭제의 3개의 게이트가 존재했지만, GRU는 업데이트 게이트와 리셋 게이트두가지만 존재
+- LSTM보다 학습 속도가 빠르지만 성능은 비슷함
+- 데이터 양이 적을 때는 매개 변수의 양이 적은 GRU가 조금 더 낫고, 데이터 양이 많으면 LSTM이 더 나음
+
+
+## 8-4 케라스의 SimpleRNN과 LSTM 이해하기
+### 임의의 입력 생성하기
+```python
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.layers import SimpleRNN, LSTM, Bidirectional
+
+# 벡터의 차원 = 5, 문장의 길이 = 4
+### RNN은 2D 텐서가 아니라 3D 텐서를 입력받으므로 배치 크기 1을 추가함으로서 2D 텐서를 3D 텐서로 변경
+train_X = [[0.1, 4.2, 1.5, 1.1, 2.8], [1.0, 3.1, 2.5, 0.7, 1.1], [0.3, 2.1, 1.5, 2.1, 0.1], [2.2, 1.4, 0.5, 0.9, 1.1]]
+print(np.shape(train_X))
+```
+
+### SimpleRNN 이해하기
+```python 
+# 은닉 상태의 크기를 3으로 지정하고, 두 인자 값이 모두 False일 때의 출력값 확인
+rnn = SimpleRNN(3)
+# rnn = SimpleRNN(3, return_sequences=False, return_state=False)와 동일.
+hidden_state = rnn(train_X)
+
+print('hidden state : {}, shape: {}'.format(hidden_state, hidden_state.shape))
+
+# return_sequences를 True로 지정하여 모든 시점의 은닉 상태를 출력
+rnn = SimpleRNN(3, return_sequences=True)
+hidden_states = rnn(train_X)
+
+print('hidden states : {}, shape: {}'.format(hidden_states, hidden_states.shape))
+
+#return_state가 True일 경우에는 return_sequences의 True/False 여부와 상관없이 마지막 시점의 은닉 상태를 출력
+rnn = SimpleRNN(3, return_sequences=True, return_state=True)
+hidden_states, last_state = rnn(train_X)
+
+print('hidden states : {}, shape: {}'.format(hidden_states, hidden_states.shape))
+print('last hidden state : {}, shape: {}'.format(last_state, last_state.shape))
+
+# return_sequences는 False인데, retun_state가 True인 경우
+rnn = SimpleRNN(3, return_sequences=False, return_state=True)
+hidden_state, last_state = rnn(train_X)
+
+print('hidden state : {}, shape: {}'.format(hidden_state, hidden_state.shape))
+print('last hidden state : {}, shape: {}'.format(last_state, last_state.shape))
+```
+
+### LSTM 이해하기
+```python
+# return_sequences를 False로 두고, return_state가 True인 경우
+lstm = LSTM(3, return_sequences=False, return_state=True)
+hidden_state, last_state, last_cell_state = lstm(train_X)
+
+print('hidden state : {}, shape: {}'.format(hidden_state, hidden_state.shape))
+print('last hidden state : {}, shape: {}'.format(last_state, last_state.shape))
+print('last cell state : {}, shape: {}'.format(last_cell_state, last_cell_state.shape))
+
+# return_sequences를 True로 변경
+lstm = LSTM(3, return_sequences=True, return_state=True)
+hidden_states, last_hidden_state, last_cell_state = lstm(train_X)
+
+print('hidden states : {}, shape: {}'.format(hidden_states, hidden_states.shape))
+print('last hidden state : {}, shape: {}'.format(last_hidden_state, last_hidden_state.shape))
+print('last cell state : {}, shape: {}'.format(last_cell_state, last_cell_state.shape))
+# return_state가 True이므로 두번째 출력값이 마지막 은닉 상태, 세번째 출력값이 마지막 셀 상태인 것은 변함없지만 return_sequences가 True이므로 첫번째 출력값은 모든 시점의 은닉 상태가 출력됨
+```
+
+### Bidirectional(LSTM) 이해하기
+```python
+# 양방향 LSTM의 출력값 확인
+
+# 출력되는 은닉 상태의 값 고정
+k_init = tf.keras.initializers.Constant(value=0.1)
+b_init = tf.keras.initializers.Constant(value=0)
+r_init = tf.keras.initializers.Constant(value=0.1)
+
+# return_sequences가 False이고, return_state가 True인 경우
+bilstm = Bidirectional(LSTM(3, return_sequences=False, return_state=True, \
+                            kernel_initializer=k_init, bias_initializer=b_init, recurrent_initializer=r_init))
+hidden_states, forward_h, forward_c, backward_h, backward_c = bilstm(train_X)
+
+print('hidden states : {}, shape: {}'.format(hidden_states, hidden_states.shape))
+print('forward state : {}, shape: {}'.format(forward_h, forward_h.shape))
+print('backward state : {}, shape: {}'.format(backward_h, backward_h.shape))
+```
+- 5개의 값을 반환
+- 셀 상태는 각각 forward_c와 backward_c에 저장만 하고 출력하지 않음
+- 정방향 LSTM의 마지막 시점의 은닉 상태값 : [0.6303139 0.6303139 0.6303139]
+- 역방향 LSTM의 첫번째 시점의 은닉 상태값 : [0.70387346 0.70387346 0.70387346]
+```python
+# return_sequences를 True로 할 경우, 출력이 어떻게 바뀌는지 비교
+bilstm = Bidirectional(LSTM(3, return_sequences=True, return_state=True, \
+                            kernel_initializer=k_init, bias_initializer=b_init, recurrent_initializer=r_init))
+hidden_states, forward_h, forward_c, backward_h, backward_c = bilstm(train_X)
+print('hidden states : {}, shape: {}'.format(hidden_states, hidden_states.shape))
+print('forward state : {}, shape: {}'.format(forward_h, forward_h.shape))
+print('backward state : {}, shape: {}'.format(backward_h, backward_h.shape))
+```
+- hidden states의 출력값에서는 이제 모든 시점의 은닉 상태가 출력
+- 역방향 LSTM의 첫번째 시점의 은닉 상태는 더이상 정방향 LSTM의 마지막 시점의 은닉 상태와 연결되는 것이 아니라 정방향 LSTM의 첫번째 시점의 은닉 상태와 연결됨
+
+
+## 8-5 RNN 언어 모델(Recurrent Neural Network Language Model, RNNLM)
+### RNN 언어 모델(Recurrent Neural Network Language Model, RNNLM)
+- n-gram 언어 모델과 NNLM은 고정된 개수의 단어만을 입력 받아야 한다는 단점이 존재
+- 시점(time step) 개념이 도입된 RNN으로 언어 모델을 만들면 입력의 길이를 고정하지 않아도 됨
+- RNN으로 만든 언어 모델을 RNNLM이라 함
+#### RNNLM이 언어 모델링을 학습하는 과정
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/df5ab9b4-d093-4c6d-8de3-22746278e785" />
+
+- RNNLM은 기본적으로 예측 과정에서 이전 시점의 출력을 현재 시점의 입력으로 함
+- 교사 강요(teacher forcing)
+  - RNN 훈련 기법
+  - 테스트 과정에서 t 시점의 출력이 t+1 시점의 입력으로 사용되는 RNN 모델을 훈련시킬 때 사용하는 훈련 기법
+  - 모델이 t 시점에서 예측한 값을 t+1 시점에 입력으로 사용하지 않고, t 시점의 레이블. 즉, 실제 알고있는 정답을 t+1 시점의 입력으로 사용
+  - 교사 강요를 사용하여 RNN을 좀 더 빠르고 효과적으로 훈련시킬 수 있음
+  - 훈련 과정 동안 출력층에서 사용하는 활성화 함수는 소프트맥스 함수
+  - 모델이 예측한 값과 실제 레이블과의 오차를 계산하기 위해서 손실 함수로 크로스 엔트로피 함수를 사용
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/dd02549d-99f4-4e3c-b52a-74b7f6c9a7e3" />
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/14d800dc-3eab-4b14-8499-ac1669da1427" />
+
+- RNNLM은 위의 그림과 같이 총 4개의 층(layer)으로 이루어진 인공 신경망
+- timestep을 4로 가정한다면, 4번째 입력 단어인 fat의 원-핫 벡터가 입력됨
+- 모델이 예측해야 하는 정답 단어인 cat의 원-핫 벡터는 출력층에서 모델이 예측한 값의 오차를 구하기 위해 사용됨
+- 이 오차로부터 손실 함수를 사용해 인공 신경망이 학습함
+- 임베딩층: 임베딩 벡터를 얻는 투사층
+
+
+## 8-6 RNN을 이용한 텍스트 생성(Text Generation using RNN)
+다대일 구조의 RNN을 사용하여 문맥을 반영해서 텍스트를 생성하는 모델 만들기
+
+### RNN을 이용하여 텍스트 생성하기
+```python
+import numpy as np
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.utils import to_categorical
+
+text = """경마장에 있는 말이 뛰고 있다\n
+그의 말이 법이다\n
+가는 말이 고와야 오는 말이 곱다\n"""
+
+# 단어 집합을 생성하고 크기를 확인, 패딩을 위한 0을 고려하여 +1 처리
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts([text])
+vocab_size = len(tokenizer.word_index) + 1
+print('단어 집합의 크기 : %d' % vocab_size)
+
+# 훈련 데이터 만들기
+sequences = list()
+for line in text.split('\n'): # 줄바꿈 문자를 기준으로 문장 토큰화
+    encoded = tokenizer.texts_to_sequences([line])[0]
+    for i in range(1, len(encoded)):
+        sequence = encoded[:i+1]
+        sequences.append(sequence)
+
+print('학습에 사용할 샘플의 개수: %d' % len(sequences))
+
+# 전체 샘플에 대해 길이를 일치시키기
+max_len = max(len(l) for l in sequences) # 모든 샘플에서 길이가 가장 긴 샘플의 길이 출력
+print('샘플의 최대 길이 : {}'.format(max_len))
+
+# 전체 샘플의 길이를 최대 길이로 패딩
+sequences = pad_sequences(sequences, maxlen=max_len, padding='pre')
+
+# 각 샘플의 마지막 단어를 레이블로 분리
+sequences = np.array(sequences)
+X = sequences[:,:-1]
+y = sequences[:,-1]
+
+# 원-핫 인코딩
+y = to_categorical(y, num_classes=vocab_size)
+```
+
+### 모델 설계하기
+```python
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, Dense, SimpleRNN
+
+# 하이퍼파라미터인 임베딩 벡터의 차원은 10, 은닉 상태의 크기는 32
+# 다대일 구조의 RNN을 사용
+# 전결합층(Fully Connected Layer)을 출력층으로 단어 집합 크기만큼의 뉴런을 배치하여 모델을 설계
+embedding_dim = 10
+hidden_units = 32
+
+model = Sequential()
+model.add(Embedding(vocab_size, embedding_dim))
+model.add(SimpleRNN(hidden_units))
+model.add(Dense(vocab_size, activation='softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.fit(X, y, epochs=200, verbose=2)
+
+# 모델이 정확하게 예측하고 있는지 문장을 생성하는 함수 생성 및 출력
+def sentence_generation(model, tokenizer, current_word, n): # 모델, 토크나이저, 현재 단어, 반복할 횟수
+    init_word = current_word
+    sentence = ''
+
+    # n번 반복
+    for _ in range(n):
+        # 현재 단어에 대한 정수 인코딩과 패딩
+        encoded = tokenizer.texts_to_sequences([current_word])[0]
+        encoded = pad_sequences([encoded], maxlen=5, padding='pre')
+        # 입력한 X(현재 단어)에 대해서 Y를 예측하고 Y(예측한 단어)를 result에 저장.
+        result = model.predict(encoded, verbose=0)
+        result = np.argmax(result, axis=1)
+
+        for word, index in tokenizer.word_index.items(): 
+            # 만약 예측한 단어와 인덱스와 동일한 단어가 있다면 break
+            if index == result:
+                break
+
+        # 현재 단어 + ' ' + 예측 단어를 현재 단어로 변경
+        current_word = current_word + ' '  + word
+
+        # 예측 단어를 문장에 저장
+        sentence = sentence + ' ' + word
+
+    sentence = init_word + sentence
+    return sentence
+```
+
+###  LSTM을 이용하여 텍스트 생성하기
+
+#### 데이터에 대한 이해와 전처리
+
+#### 모델 설계하기
 
 
 
