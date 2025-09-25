@@ -629,14 +629,261 @@ padded
 ```
 
 
+## 2-8 원-핫 인코딩(One-Hot Encoding)
+### 단어 집합(vocabulary)
+- 서로 다른 단어들의 집합
+- book != book
+
+### 원-핫 인코딩이란?
+- 단어 집합의 크기를 벡터의 차원으로 하고, 표현하고 싶은 단어의 인덱스의 1의 값을 부여하고, 다른 인덱스에는 0을 부여하는 단어의 벡터 표현 방식
+- 원-핫 인코딩을 통해 표현된 벡터를 원-핫 벡터라고 함
+- 원-핫 인코딩의 두 가지 과정
+  - 정수 인코딩을 수행(각 단어에 고유한 정수를 부여)
+  - 표현하고 싶은 단어의 고유한 정수를 인덱스로 간주하고 해당 위치에 1을 부여하고, 다른 단어의 인덱스의 위치에는 0을 부여
+```python
+from konlpy.tag import Okt  
+
+okt = Okt()  
+tokens = okt.morphs("나는 자연어 처리를 배운다")  
+print(tokens)
+
+# 각 토큰에 대해 고유한 정수를 부여
+word_to_index = {word : index for index, word in enumerate(tokens)}
+print('단어 집합 :',word_to_index)
+
+# 토큰을 입력하면 해당 토큰에 대한 원-핫 벡터를 만들어내는 함수를 만듦
+def one_hot_encoding(word, word_to_index):
+  one_hot_vector = [0]*(len(word_to_index))
+  index = word_to_index[word]
+  one_hot_vector[index] = 1
+  return one_hot_vector
+
+# '자연어'라는 단어의 원-핫 벡터 얻기
+one_hot_encoding("자연어", word_to_index)
+```
+```python
+[0, 0, 1, 0, 0, 0]  
+```
+
+### 케라스를 이용한 원-핫 인코딩
+케라스는 원-핫 인코딩을 수행하는 유용한 도구 to_categorical()를 지원함
+```python
+text = "나랑 점심 먹으러 갈래 점심 메뉴는 햄버거 갈래 갈래 햄버거 최고야"
+
+# 케라스 토크나이저를 이용한 정수 인코딩
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.utils import to_categorical
+
+text = "나랑 점심 먹으러 갈래 점심 메뉴는 햄버거 갈래 갈래 햄버거 최고야"
+
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts([text])
+print('단어 집합 :',tokenizer.word_index)
+
+# 생성된 단어 집합 내의 일부 단어들로만 구성된 서브 텍스트를 만들어 확인
+sub_text = "점심 먹으러 갈래 메뉴는 햄버거 최고야"
+encoded = tokenizer.texts_to_sequences([sub_text])[0]
+print(encoded)
+
+# 케라스의 to_categorical()을 사용하여 원-핫 인코딩
+one_hot = to_categorical(encoded)
+print(one_hot)
+```
+```python
+[[0. 0. 1. 0. 0. 0. 0. 0.] # 인덱스 2의 원-핫 벡터
+ [0. 0. 0. 0. 0. 1. 0. 0.] # 인덱스 5의 원-핫 벡터
+ [0. 1. 0. 0. 0. 0. 0. 0.] # 인덱스 1의 원-핫 벡터
+ [0. 0. 0. 0. 0. 0. 1. 0.] # 인덱스 6의 원-핫 벡터
+ [0. 0. 0. 1. 0. 0. 0. 0.] # 인덱스 3의 원-핫 벡터
+ [0. 0. 0. 0. 0. 0. 0. 1.]] # 인덱스 7의 원-핫 벡터
+```
+
+### 원-핫 인코딩의 한계
+- 단어의 개수가 늘어날 수록, 벡터를 저장하기 위해 필요한 공간이 계속 늘어남, 비효율적
+- 단어의 유사도를 표현하지 못함
+  - 검색 시스템 등에서 문제가 될 소지가 있음: '삿포로 숙소'를 입력하면 '삿포로 호텔'과 같은 유사 단어에 대한 결과를 보여주지 못함
+ 
+
+## 2-9 데이터 분리(Splitting Data)
+### 지도 학습(Supervised Learning)
+지도 학습의 훈련 데이터는 정답이 무엇인지 맞춰야 하는 '문제'에 해당되는 데이터와 레이블이라고 부르는 '정답'이 적혀있는 데이터로 구성되어 있음
+<img width="400" height="200" alt="image" src="https://github.com/user-attachments/assets/4166a478-5cea-4786-9b71-40ea7558c51f" />
+
+- 데이터 분리의 과정
+  - 메일의 내용이 담긴 열을 X에, 메일의 스팸 여부(정답)가 적힌 열을 Y에 저장
+  - X와 Y에 대해 일부 데이터를 test 데이터로 분리
+  - 분리 시에는 여전히 X와 Y의 맵핑 관계를 유지해야 함
+  - train의 18000개의 X, Y의 Tkdrhk test의 2000개의 X, Y 쌍이 생성됨
+    - X_train: 문제지 데이터
+    - Y_train: 문제지에 대한 정답 데이터
+    - X_test: 시험지 데이터
+    - Y_test: 시험지에 대한 정답 데이터
+  - 기계는 이제부터 X_train과 Y_train에 대해 학습
+  - 학습을 다 한 기계에게 Y_test는 보여주지 않고 X_test에 대해서 정답을 예측하게 함
+  - 기계가 예측한 답과 실제 정답인 Y_test를 비교하며 기계가 얼마나 맞췄는지 평가
+  - 평가한 수치는 기계의 정확도(Accuracy)가 됨
+
+ ### X와 Y 분리하기
+ #### zip 함수를 이용하여 분리
+ ```python
+# zip(): 동일한 개수를 가지는 시퀀스 자료형에서 각 순서에 등장하는 원소들끼리 묶어주는 역할
+X, y = zip(['a', 1], ['b', 2], ['c', 3])
+print('X 데이터 :',X)
+print('y 데이터 :',y)
+
+# 각 데이터에서 첫번째로 등장한 원소들끼리 묶이고, 두번째로 등장한 원소들끼리 묶임
+sequences = [['a', 1], ['b', 2], ['c', 3]]
+X, y = zip(*sequences)
+print('X 데이터 :',X)
+print('y 데이터 :',y)
+```
+
+#### 데이터 프레임을 이용하여 분리
+```python
+values = [['당신에게 드리는 마지막 혜택!', 1],
+['내일 뵐 수 있을지 확인 부탁드...', 0],
+['도연씨. 잘 지내시죠? 오랜만입...', 0],
+['(광고) AI로 주가를 예측할 수 있다!', 1]]
+columns = ['메일 본문', '스팸 메일 유무']
+
+df = pd.DataFrame(values, columns=columns)
+df
+
+X = df['메일 본문']
+y = df['스팸 메일 유무']
+
+```
+#### Numpy를 이용하여 분리
+```python
+# 임의의 데이터를 만들어서 Numpy의 슬라이싱(slicing)을 사용하여 데이터를 분리
+np_array = np.arange(0,16).reshape((4,4))
+print('전체 데이터 :')
+print(np_array)
+
+# 마지막 열을 제외하고 X데이터에 저장, 마지막 열만을 Y 데이터에 저장
+X = np_array[:, :3]
+y = np_array[:,3]
+
+print('X 데이터 :')
+print(X)
+print('y 데이터 :',y)
+```
+
+### 테스트 데이터 분리하기
+#### 사이킷 런을 이용하여 분리하기
+~~~
+X : 독립 변수 데이터. (배열이나 데이터프레임)
+y : 종속 변수 데이터. 레이블 데이터.
+test_size : 테스트용 데이터 개수를 지정한다. 1보다 작은 실수를 기재할 경우, 비율을 나타낸다.
+train_size : 학습용 데이터의 개수를 지정한다. 1보다 작은 실수를 기재할 경우, 비율을 나타낸다.
+random_state : 난수 시드
+~~~
+```python
+# 임의로 X와 y 데이터를 생성
+X, y = np.arange(10).reshape((5, 2)), range(5)
+
+print('X 전체 데이터 :')
+print(X)
+print('y 전체 데이터 :')
+print(list(y))
+
+# 7:3의 비율로 훈련 데이터와 테스트 데이터 분리
+# train_test_split()은 기본적으로 데이터의 순서를 섞고나서 훈련 데이터와 테스트 데이터를 분리
+# 만약, random_state의 값을 특정 숫자로 기재해준 뒤 다음에도 동일한 숫자로 기재하면 항상 동일한 훈련 데이터와 테스트 데이터를 얻을 수 있음
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1234)
+```
+#### 수동으로 분리하기
+```python
+# 실습을 위해 임의로 X와 y가 이미 분리 된 데이터를 생성
+X, y = np.arange(0,24).reshape((12,2)), range(12)
+
+print('X 전체 데이터 :')
+print(X)
+print('y 전체 데이터 :')
+print(list(y))
+
+# 훈련 데이터의 개수와 테스트 데이터의 개수 정하기
+num_of_train = int(len(X) * 0.8) # 데이터의 전체 길이의 80%에 해당하는 길이값을 구한다.
+num_of_test = int(len(X) - num_of_train) # 전체 길이에서 80%에 해당하는 길이를 뺀다.
+print('훈련 데이터의 크기 :',num_of_train)
+print('테스트 데이터의 크기 :',num_of_test)
+
+X_test = X[num_of_train:] # 전체 데이터 중에서 20%만큼 뒤의 데이터 저장
+y_test = y[num_of_train:] # 전체 데이터 중에서 20%만큼 뒤의 데이터 저장
+X_train = X[:num_of_train] # 전체 데이터 중에서 80%만큼 앞의 데이터 저장
+y_train = y[:num_of_train] # 전체 데이터 중에서 80%만큼 앞의 데이터 저장
+```
 
 
+## 2-10 한국어 전처리 패키지(Text Preprocessing Tools for Korean Text)
+### PyKoSpacing
+- 띄어쓰기가 되어있지 않은 문장을 띄어쓰기를 한 문장으로 변환해주는 패키지
+- 대용량 코퍼스를 학습하여 만들어진 띄어쓰기 딥러닝 모델로, 준수한 성능을 가짐
+### SOYNLP를 이용한 단어 토큰화
+품사 태깅, 단어 토큰화 등을 지원<br>
+비지도 학습으로 단어 토큰화<br>
+데이터에 자주 등장하는 단어들을 단어로 분석<br>
+soynlp 단어 토크나이저는 내부적으로 단어 점수 표로 동작하고, 이 점수는 응집 확률과 브랜칭 엔트로피를 활용
+#### 기존의 형태소 분석기가 가진 문제
+신조어 문제: 형태소 분석기에 등록되지 않은 단어는 제대로 구분하지 못함
+#### 학습하기
+```python
+import urllib.request
+from soynlp import DoublespaceLineCorpus
+from soynlp.word import WordExtractor
 
+urllib.request.urlretrieve("https://raw.githubusercontent.com/lovit/soynlp/master/tutorials/2016-10-20.txt", filename="2016-10-20.txt")
 
+# 훈련 데이터를 다수의 문서로 분리
+corpus = DoublespaceLineCorpus("2016-10-20.txt")
+len(corpus)
 
+# 상위 3개의 문서만 출력
+i = 0
+for document in corpus:
+  if len(document) > 0:
+    print(document)
+    i = i+1
+  if i == 3:
+    break
 
+# WordExtractor.extract()를 통해서 전체 코퍼스에 대해 단어 점수표를 계산
+word_extractor = WordExtractor()
+word_extractor.train(corpus)
+word_score_table = word_extractor.extract()
+```
+#### SOYNLP의 응집 확률(cohesion probability)
+- 응집 확률
+  - 내부 문자열이 얼마나 응집하여 자주 등장하는지를 판단하는 척도
+  - 문자열을 문자 단위로 분리하여 내부 문자열을 만드는 과정에서 왼쪽부터 순서대로 문자를 추가하며 각 문자열이 주어졌을 때 그 다음 문자가 나올 확률을 계산하여 누적곱을 한 값
+  - 이 값이 높을수록 전체 코퍼스에서 이 문자열 시퀀스는 하나의 단어로 등장할 가능성이 높음
+```python
+# '반포한'의 응집확률 계산
+word_score_table["반포한"].cohesion_forward
 
+# '반포한강'의 응집확률 계산
+word_score_table["반포한강"].cohesion_forward
+```
+#### SOYNLP의 브랜칭 엔트로피(branching entropy)
+- 확률 분포의 엔트로피 값을 사용
+- 주어진 문자열에서 얼마나 다음 문자가 등장할 수 있는지를 판단하는 척도
+- 브랜칭 엔트로피의 값은 하나의 완성된 단어에 가까워질수록 문맥으로 인해 점점 정확히 예측할 수 있게 되면서 점점 줄어드는 양상을 보임
 
+#### SOYNLP의 L tokenizer
+- 한국어는 띄어쓰기 단위로 나눈 어절 토큰은 주로 L 토큰 + R 토큰의 형식을 가질 때가 많음
+- L 토크나이저는 L 토큰 + R 토큰으로 나누되, 분리 기준을 점수가 가장 높은 L 토큰을 찾아내는 원리임
+
+#### 최대 점수 토크나이저
+- 띄어쓰기가 되지 않는 문장에서 점수가 높은 글자 시퀀스를 순차적으로 찾아내는 토크나이저
+
+### SOYNLP를 이용한 반복되는 문자 정제
+- 문제: 'ㅋㅋㅋ', 'ㅋㅋ ㅋㅋ ㅋㅋ ㅋ'와 같은 경우를 모두 서로 단어로 처리하는 것은 불필요
+- 반복되는 것은 하나로 정규
+
+### Customized KoNLPy
+- 사용자 사전을 추가하는 방법은 형태소 분석기마다 다름
+- 복잡한 경우가 많음
+- Customized KoNLPy: 사용자 추가가 매우 쉬운 패키지
 
 
 
